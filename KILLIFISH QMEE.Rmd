@@ -1,0 +1,124 @@
+---
+title: "Killifish Respirometry"
+author: "Hayden Simm"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# loading packages --------------------------------------------------------
+
+library(tidyverse)
+library(ggplot2)
+library(respR)
+```
+
+```{r}
+# loading respirometry dataframe -------------------------------------------------------
+
+df_fish_acclim_4 <- read.delim (file.choose()) #I've found this easier then using the path each time
+```
+
+```{r}
+df_bact_acclim_4 <- read.delim (file.choose())
+```
+
+#look at the dataframe and remove the first rows accordingly
+```{r}
+df_fish<-df_fish_acclim_4[-c(0:141),] 
+```
+
+```{r}
+df_bact<-df_bact_acclim_4[-c(0:141),]
+```
+
+
+#removing excess columns
+```{r}
+df_fish <- df_fish[,c(3,4,22,40,58,81,99,117,135)]
+df_bact <- df_bact[,c(3,4,22,40,58,81,99,117,135)]
+
+```
+
+#renaming columns
+```{r}
+df_fish <- df_fish %>%
+  rename (time = 1,  A1 = 2,  A2 = 3,   A3 = 4,   A4 = 5,
+          B1 = 6,    B2 = 7,  B3 = 8, B4 = 9)
+df_bact<- df_bact %>%
+  rename (time = 1,  A1 = 2,  A2 = 3,   A3 = 4,   A4 = 5,
+          B1 = 6,    B2 = 7,  B3 = 8, B4 = 9)
+```
+
+#making values numeric for RespR
+```{r}
+df_fish[,c(1:9)] <- sapply(df_fish[,c(1:9)], as.numeric) #this will introduce NAs
+df_fish[,c(1:9)] <- sapply(df_fish[,c(1:9)], unlist)
+
+df_bact[,c(1:9)] <- sapply(df_bact[,c(1:9)], as.numeric)
+df_bact[,c(1:9)] <- sapply(df_bact[,c(1:9)], unlist)
+
+#remove rows at end that contain no data
+df_fish <- df_fish %>% drop_na()
+df_bact <- df_bact %>% drop_na()
+```
+
+#making time intervals start from 1
+```{r}
+#df_fish$time <- format_time(df_fish$time, time = 1, format = "HMS", start = 1)
+#df_bact$time <- format_time(df_bact$time, time = 1, format = "HMS", start = 1)
+```
+
+#MMR
+```{r}
+MMR_B4<-df_fish %>%
+  select(time, B4) %>%
+  na.omit() %>%
+  subset_data(from = 1100, to = 1200, by = "row") %>% #subset to time when MMR was preformed
+  inspect(time = 1, oxygen = 2) %>%
+  auto_rate(method = "linear", width = 0.2, by = "row") %>%
+  #plot(pos = 6) %>% ##to look at different ranks, pick the rank that covers the obvious region
+  convert_rate(oxy.unit = '%Air', time.unit = 's', output.unit = 'umol/min/g', 
+               volume = 0.175, S = 11, t = 24, mass = 0.00689) %>%
+  ## ^adjust volume (in litres), salinity (ppt), temperature (C), mass (in kg)
+  select_rate(method = "rsq", n = c(0.9,1)) %>%
+  select_rate(method = "rank") %>%
+  select_rate(method = "highest", n = 1) %>%
+  summary(export = TRUE) 
+```
+
+#SMR
+```{r}
+SMR_B4<-df_fish %>%
+  select(time, B4) %>%
+  na.omit() %>%
+  inspect(time = 1, oxygen = 2, plot = F) %>%
+  subset_data(from = 30000, to = 40000, by = "time") %>% #subset to after MMR and middle of night 
+  auto_rate.int(start = 800, #time that flush pump is on, in seconds
+                wait = 150, 
+                measure = 100, #wait + measure times should add to time that flush pump is off
+                method = "linear", width = 75, by = "time") %>%
+  convert_rate(oxy.unit = '%Air', time.unit = 's', output.unit = 'umol/min/g', 
+               volume = 0.175, S = 11, t = 24, mass = 0.00689) %>%
+  #plot(pos =10) %>%
+  #summary(pos =10) %>%
+  select_rate(method = "rsq", n = c(0.9,1)) %>%
+  select_rate(method = "lowest_percentile", n = 0.1) %>%
+  mean() %>% #this is your final value
+  summary(export = TRUE)
+
+```
+
+#background
+```{r}
+bg_A2 <- df_fish %>%
+  select(time, A2) %>%
+  subset_data(from = 40000, to = 40500, by = "time") %>% 
+  inspect(time = 1, oxygen = 2) %>% ##run until here first, look at data, adjust accordingly
+  calc_rate.bg() 
+```
+```
+
