@@ -19,7 +19,7 @@ library(respR)
 ```{r}
 # loading respirometry dataframe -------------------------------------------------------
 
-df_fish <- read.delim (file.choose()) #file name "2025-01-20_181758_KILLIFISH RESPIROMETRY 1 JAN 2.txt"
+df_fish <- read.delim (file.choose()) #file name "2025-01-20_181758_KILLIFISH_RESPIROMETRY1_JAN2.txt"
 ```
 
 #remove the first rows which include device information
@@ -86,4 +86,5 @@ SMR_A1<-df_fish %>%
   summary(export = TRUE)
 
 ```
+
 
