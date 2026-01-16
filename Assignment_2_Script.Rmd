@@ -1,0 +1,85 @@
+---
+title: "QMEE_Assignment2"
+author: "Hayden Simm"
+date: "2026-01-15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# loading packages --------------------------------------------------------
+
+library(tidyverse)
+library(ggplot2)
+library(respR)
+library(dplyr)
+library(tidyr)
+```
+
+```{r}
+# loading respirometry dataframe -------------------------------------------------------
+
+df_fish<-read.delim("2025-01-20_181758_KILLIFISH_RESPIROMETRY1_JAN2.txt")
+```
+
+#remove the first rows which include device information
+```{r}
+df_fish<-df_fish[-c(0:142),] 
+```
+
+#removing excess columns which we are not analyzing
+```{r}
+df_fish <- df_fish[,c(3,4,22,40,58,81,99,117,135)]
+```
+
+#renaming columns to the instrument channel names
+```{r}
+df_fish <- df_fish %>%
+  rename (time = 1,  A1 = 2,  A2 = 3,   A3 = 4,   A4 = 5,
+          B1 = 6,    B2 = 7,  B3 = 8, B4 = 9)
+```
+
+#making values numeric for RespR because they are currently character
+```{r}
+str(df_fish) #returns that all columns are "chr"
+df_fish_numeric <- df_fish %>%
+  mutate(across(everything(), as.numeric))
+str(df_fish_numeric) #verifies everything is converted to "num"
+```
+
+#removing excess NAs from when data was stopped recording 
+```{r}
+df_fish_numeric[!complete.cases(df_fish_numeric), ] #identifies rows with NAs to check if they are in the 'core' of the data
+df_fish_numeric <- df_fish_numeric %>% drop_na()
+anyNA(df_fish_numeric) #confirm NAs were removed
+```
+
+#now the data set is clean and we can investigate it for problems
+```{r}
+plot(df_fish_numeric$time, df_fish_numeric$A1, type = "l", lwd = 2, col=1,
+  xlab = "Time (s)", 
+  ylab = "Oxygen concentration (%air)")
+lines(df_fish_numeric$time, df_fish_numeric$A2, lwd = 2, col=2)
+lines(df_fish_numeric$time, df_fish_numeric$A3, lwd = 2, col=3)
+lines(df_fish_numeric$time, df_fish_numeric$A4, lwd = 2, col=4)
+```
+
+#pivoting the data to a format for an overlayed histogram
+```{r}
+df_fish_long <- df_fish_numeric %>%
+  pivot_longer(cols = -time, names_to = "chamber", values_to = "percentair")
+df_fish_long %>%
+  filter(chamber %in% c("A1", "A2", "A3", "A4")) %>% #filtering out 4 chambers that were all at the same temperature and therefore more comparable 
+  ggplot(aes(x = percentair, fill = chamber)) +
+  geom_histogram(alpha = 0.4, bins = 40, position = "identity") +
+  theme_minimal()
+```
+
+#save this cleaned data
+```{r}
+saveRDS(df_fish_numeric)
+saveRDS(df_fish_long)
+```
