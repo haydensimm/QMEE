@@ -59,6 +59,7 @@ anyNA(df_fish_numeric) #confirm NAs were removed
 
 #now the data set is clean and we can investigate it for problems
 ```{r}
+summary(df_fish_numeric) #numerical way to identify minimum and maximum values are as expected, ~80-100 %air
 plot(df_fish_numeric$time, df_fish_numeric$A1, type = "l", lwd = 2, col=1,
   xlab = "Time (s)", 
   ylab = "Oxygen concentration (%air)")
@@ -80,6 +81,6 @@ df_fish_long %>%
 
 #save this cleaned data
 ```{r}
-saveRDS(df_fish_numeric)
-saveRDS(df_fish_long)
+saveRDS(df_fish_numeric, file = "df_fish_numeric.rds")
+saveRDS(df_fish_long, file = "df_fish_long.rds")
 ```
