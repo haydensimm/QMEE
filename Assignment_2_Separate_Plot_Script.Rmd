@@ -1,0 +1,80 @@
+---
+title: "Assignment_2_Separate_Plot_Script"
+author: "Hayden Simm"
+date: "2026-01-16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#loading all the packages
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(respR)
+library(dplyr)
+library(tidyr)
+```
+
+#reading in the cleaned data
+```{r}
+df_fish_numeric<-readRDS("df_fish_numeric.rds")
+```
+
+#doing a calculation
+#this is first the chamber containing a fish
+```{r}
+total_A1<-df_fish_numeric %>%
+  select(time, A1) %>%
+  na.omit() %>%
+  inspect(time = 1, oxygen = 2, plot = F) %>%
+  subset_data(from = 30000, to = 40000, by = "time") %>% #subset to after MMR and middle of night 
+  auto_rate.int(start = 600, #time that flush pump is on, in seconds
+                wait = 100, 
+                measure = 250, #wait + measure times should add to time that flush pump is off
+                method = "linear", width = 150, by = "time") %>%
+  convert_rate(oxy.unit = '%Air', time.unit = 's', output.unit = 'umol/min/g', 
+               volume = 0.175, S = 28, t = 10, mass = 0.003894) %>%
+  #plot(pos =10) %>%
+  #summary(pos =10) %>% this is to specifically look at specific replicates
+  select_rate(method = "rsq", n = c(0.9,1)) %>%
+  select_rate(method = "lowest_percentile", n = 0.1) %>%
+  mean() %>% #this is your final value
+  summary(export = TRUE)
+```
+
+#the blank to standardize to 
+```{r}
+background_B4<-df_fish_numeric %>%
+  select(time, B4) %>%
+  na.omit() %>%
+  inspect(time = 1, oxygen = 2, plot = F) %>%
+  subset_data(from = 30000, to = 40000, by = "time") %>% #subset to after MMR and middle of night 
+  auto_rate.int(start = 600, #time that flush pump is on, in seconds
+                wait = 300, 
+                measure = 200, #wait + measure times should add to time that flush pump is off
+                method = "linear", width = 100, by = "time") %>%
+  convert_rate(oxy.unit = '%Air', time.unit = 's', output.unit = 'umol/min/g', 
+               volume = 0.175, S = 28, t = 10, mass = 0.003894) %>%
+  #plot(pos =10) %>%
+  #summary(pos =10) %>% this is to specifically look at specific replicates
+  select_rate(method = "rsq", n = c(0.9,1)) %>%
+  select_rate(method = "lowest_percentile", n = 0.1) %>%
+  mean() %>% #this is your final value
+  summary(export = TRUE)
+```
+
+#removing the absolute background oxygen consumption
+```{r}
+background_abs<-background_B4$"rate.abs"
+total_abs<-mean(total_A1$"rate.abs")
+fish_abs<-(total_abs-background_abs)
+```
+
+#calculating the fish resting metabolic rate of the fish alone
+```{r}
+fish_RMR<-mean(abs((fish_abs)/(total_A1$"mass"))) #units umolO2/min/kg
+```
+
