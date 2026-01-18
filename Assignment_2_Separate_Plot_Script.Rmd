@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 #loading all the packages
 ```{r}
-library(tidyverse)
+library(tidyverse)  ## BMB includes ggplot2, dplyr, tidyr ... so those are redundant
 library(ggplot2)
 library(respR)
 library(dplyr)
@@ -23,13 +23,13 @@ library(tidyr)
 df_fish_numeric<-readRDS("df_fish_numeric.rds")
 ```
 
-#doing a calculation
-#this is first the chamber containing a fish
+doing a calculation  
+this is first the chamber containing a fish
 ```{r}
 total_A1<-df_fish_numeric %>%
   select(time, A1) %>%
   na.omit() %>%
-  inspect(time = 1, oxygen = 2, plot = F) %>%
+  inspect(time = 1, oxygen = 2, plot = FALSE) %>%
   subset_data(from = 30000, to = 40000, by = "time") %>% #subset to after MMR and middle of night 
   auto_rate.int(start = 600, #time that flush pump is on, in seconds
                 wait = 100, 
@@ -45,7 +45,7 @@ total_A1<-df_fish_numeric %>%
   summary(export = TRUE)
 ```
 
-#the blank to standardize to 
+the blank to standardize to 
 ```{r}
 background_B4<-df_fish_numeric %>%
   select(time, B4) %>%
@@ -66,15 +66,19 @@ background_B4<-df_fish_numeric %>%
   summary(export = TRUE)
 ```
 
-#removing the absolute background oxygen consumption
+removing the absolute background oxygen consumption
 ```{r}
-background_abs<-background_B4$"rate.abs"
-total_abs<-mean(total_A1$"rate.abs")
+background_abs<-background_B4$rate.abs ## BMB: don't need quotation marks unless name has spaces etc.
+total_abs<-mean(total_A1$rate.abs)
 fish_abs<-(total_abs-background_abs)
 ```
+**BMB**: these calculations should usually be done **within** a data frame to make sure variables are properly aligned
 
 #calculating the fish resting metabolic rate of the fish alone
 ```{r}
-fish_RMR<-mean(abs((fish_abs)/(total_A1$"mass"))) #units umolO2/min/kg
+print(fish_RMR<-mean(abs((fish_abs)/(total_A1$"mass")))) #units umolO2/min/kg
 ```
 
+**BMB**: I don't understand a lot of this automated analysis, and the level of automation makes me a little nervous (since I don't understand it/know what the assumptions are/wouldn't know how to diagnose or adjust it) - I hope you do ...
+
+Mark: 2

@@ -14,7 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
 library(ggplot2)
-library(respR)
+library(respR)  ## BMB: might want to suppressPackageStartupMessages()
 library(dplyr)
 library(tidyr)
 ```
@@ -22,15 +22,23 @@ library(tidyr)
 ```{r}
 # loading respirometry dataframe -------------------------------------------------------
 
-df_fish<-read.delim("2025-01-20_181758_KILLIFISH_RESPIROMETRY1_JAN2.txt")
+## BMB: consider *not* putting date metadata in the file name, Git
+##  should take care of that more reliably ...
+df_fish <- read.delim("2025-01-20_181758_KILLIFISH_RESPIROMETRY1_JAN2.txt")
 ```
 
-#remove the first rows which include device information
+**BMB**: is there any way you can get these data in a saner format?
+
+**BMB**: these kinds of comment characters (#) aren't needed and do weird things in an rmarkdown file (first-level headers)
+
+remove the first rows which include device information
 ```{r}
 df_fish<-df_fish[-c(0:142),] 
 ```
 
-#removing excess columns which we are not analyzing
+removing excess columns which we are not analyzing
+
+**BMB**: better to do this by name (or string pattern) if possible
 ```{r}
 df_fish <- df_fish[,c(3,4,22,40,58,81,99,117,135)]
 ```
@@ -41,6 +49,7 @@ df_fish <- df_fish %>%
   rename (time = 1,  A1 = 2,  A2 = 3,   A3 = 4,   A4 = 5,
           B1 = 6,    B2 = 7,  B3 = 8, B4 = 9)
 ```
+**BMB** if you're going to rename **all** columns then `colnames(df_fish) <- c("time", paste0("A", 1:4), paste0("B", 1:4))` is better
 
 #making values numeric for RespR because they are currently character
 ```{r}
@@ -68,18 +77,38 @@ lines(df_fish_numeric$time, df_fish_numeric$A3, lwd = 2, col=3)
 lines(df_fish_numeric$time, df_fish_numeric$A4, lwd = 2, col=4)
 ```
 
+```{r}
+## BMB: or this
+matplot(df_fish_numeric$time, df_fish_numeric[2:5], lwd=2, col = 1:4, type = "l", lty = 1)
+```
+
 #pivoting the data to a format for an overlayed histogram
 ```{r}
 df_fish_long <- df_fish_numeric %>%
   pivot_longer(cols = -time, names_to = "chamber", values_to = "percentair")
-df_fish_long %>%
-  filter(chamber %in% c("A1", "A2", "A3", "A4")) %>% #filtering out 4 chambers that were all at the same temperature and therefore more comparable 
-  ggplot(aes(x = percentair, fill = chamber)) +
-  geom_histogram(alpha = 0.4, bins = 40, position = "identity") +
-  theme_minimal()
+
+df_fish_long_A <- df_fish_long %>%
+  filter(stringr::str_starts(chamber, "A")) #filtering out 4 chambers that were all at the same temperature and therefore more comparable
+
+theme_set(theme_minimal())
+
+ggplot(df_fish_long_A, aes(x = percentair, fill = chamber)) +
+  geom_histogram(alpha = 0.4, bins = 40, position = "identity")
+
 ```
 
-#save this cleaned data
+```{r}
+ggplot(df_fish_long_A, aes(x=chamber, y = percentair/100.228)) + geom_violin(fill = "gray") +
+  scale_y_continuous(trans = "logit", breaks = c(seq(0.8, 0.95, by = 0.05), seq(0.96, 0.99, by = 0.01),
+                                                 seq(0.992, 0.998, by = 0.002)))
+```
+**BMB**: why does 'percent air' have values above 100 ???
+```{r}
+head(rev(sort(unique(df_fish_long_A$percentair))))
+```
+
+Save this cleaned data
+
 ```{r}
 saveRDS(df_fish_numeric, file = "df_fish_numeric.rds")
 saveRDS(df_fish_long, file = "df_fish_long.rds")
