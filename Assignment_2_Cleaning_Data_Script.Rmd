@@ -11,33 +11,29 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 # loading packages --------------------------------------------------------
-
-library(tidyverse)
-library(ggplot2)
-library(respR)  ## BMB: might want to suppressPackageStartupMessages()
-library(dplyr)
-library(tidyr)
+suppressPackageStartupMessages(
+  library(tidyverse)
+  )
+suppressPackageStartupMessages(
+  library(respR)
+  )
 ```
 
+creating the dataframe
 ```{r}
-# loading respirometry dataframe -------------------------------------------------------
-
-## BMB: consider *not* putting date metadata in the file name, Git
-##  should take care of that more reliably ...
-df_fish <- read.delim("2025-01-20_181758_KILLIFISH_RESPIROMETRY1_JAN2.txt")
+df_fish <- read.delim("KILLIFISH_RESPIROMETRY_1.txt")
 ```
-
 **BMB**: is there any way you can get these data in a saner format?
-
-**BMB**: these kinds of comment characters (#) aren't needed and do weird things in an rmarkdown file (first-level headers)
+**response**: the software used to collect this info is called "pyroscience" 
+  and the file outputs are supposed to be their own file types ".pyr", so yes 
+  it is a mess and part of the reason I'm here!
 
 remove the first rows which include device information
 ```{r}
-df_fish<-df_fish[-c(0:142),] 
+df_fish<-df_fish[-c(0:141),] 
 ```
 
 removing excess columns which we are not analyzing
-
 **BMB**: better to do this by name (or string pattern) if possible
 ```{r}
 df_fish <- df_fish[,c(3,4,22,40,58,81,99,117,135)]
@@ -54,7 +50,7 @@ df_fish <- df_fish %>%
 #making values numeric for RespR because they are currently character
 ```{r}
 str(df_fish) #returns that all columns are "chr"
-df_fish_numeric <- df_fish %>%
+df_fish_numeric <- df_fish [-1,]%>%
   mutate(across(everything(), as.numeric))
 str(df_fish_numeric) #verifies everything is converted to "num"
 ```
