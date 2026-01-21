@@ -1,0 +1,166 @@
+---
+title: "Assignment_3_Script"
+author: "Hayden Simm"
+date: "2026-01-20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# loading packages --------------------------------------------------------
+suppressPackageStartupMessages(
+  library(tidyverse)
+  )
+suppressPackageStartupMessages(
+  library(respR)
+  )
+```
+
+creating the dataframe
+```{r}
+df_respirometry <- read.delim("KILLIFISH_RESPIROMETRY_2.txt")
+```
+**BMB**: is there any way you can get these data in a saner format?
+**response**: the software used to collect this info is called "pyroscience" 
+  and the file outputs are supposed to be their own file types ".pyr", so yes 
+  it is a mess and part of the reason I'm here!
+
+```{r}
+start_row <- which(apply(df_respirometry, 1, 
+  function(x) any(x == "#--- Measurement Data --------------------------------------------------------------------")))
+df_respirometry <- df_respirometry[(start_row + 1):nrow(df_respirometry), ]
+colnames(df_respirometry) <- df_respirometry[1, ]
+```
+
+```{r}
+df_respirometry <- df_respirometry %>%
+  select(
+    " dt (s) [A Ch.1 Main]",
+    "Oxygen (%air sat.) [A Ch.1 Main]",
+    "Oxygen (%air sat.) [A Ch.2 Main]",
+    "Oxygen (%air sat.) [A Ch.3 Main]",
+    "Oxygen (%air sat.) [A Ch.4 Main]",
+    "Oxygen (%air sat.) [B Ch.1 Main]",
+    "Oxygen (%air sat.) [B Ch.2 Main]",
+    "Oxygen (%air sat.) [B Ch.3 Main]",
+    "Oxygen (%air sat.) [B Ch.4 Main]"
+  )
+```
+
+#making values numeric for RespR because they are currently character
+```{r}
+str(df_respirometry) #returns that all columns are "chr"
+df_respirometry_num <- df_respirometry [-1,]%>%
+  mutate(across(everything(), as.numeric))
+str(df_respirometry_num) #verifies everything is converted to "num"
+```
+
+#removing excess NAs from when data was stopped recording 
+```{r}
+df_respirometry_num[!complete.cases(df_respirometry_num), ] #identifies rows with NAs to check if they are in the 'core' of the data
+df_respirometry_num <- df_respirometry_num %>% drop_na()
+anyNA(df_respirometry_num) #confirm NAs were removed
+```
+
+```{r}
+total_A1<-df_respirometry_num %>%
+  select(" dt (s) [A Ch.1 Main]", "Oxygen (%air sat.) [A Ch.1 Main]") %>%
+  na.omit() %>%
+  inspect(time = 1, oxygen = 2, plot = FALSE) %>%
+  subset_data(from = 30000, to = 40000, by = "time") %>% #subset to after MMR and middle of night 
+  auto_rate.int(start = 600, #time that flush pump is on, in seconds
+                wait = 100, 
+                measure = 250, #wait + measure times should add to time that flush pump is off
+                method = "linear", width = 150, by = "time") %>%
+  convert_rate(oxy.unit = '%Air', time.unit = 's', output.unit = 'umol/min/g', 
+               volume = 0.175, S = 28, t = 10, mass = #ENTER MASS) %>%
+  #plot(pos =10) %>%
+  #summary(pos =10) %>% this is to specifically look at specific replicates
+  select_rate(method = "rsq", n = c(0.9,1)) %>%
+  select_rate(method = "lowest_percentile", n = 0.1) %>%
+  mean() %>% #this is your final value
+  summary(export = TRUE)
+```
+
+```{r}
+total_A2<-df_respirometry_num %>%
+  select(" dt (s) [A Ch.1 Main]", "Oxygen (%air sat.) [A Ch.2 Main]") %>%
+  na.omit() %>%
+  inspect(time = 1, oxygen = 2, plot = FALSE) %>%
+  subset_data(from = 30000, to = 40000, by = "time") %>% #subset to after MMR and middle of night 
+  auto_rate.int(start = 600, #time that flush pump is on, in seconds
+                wait = 100, 
+                measure = 250, #wait + measure times should add to time that flush pump is off
+                method = "linear", width = 150, by = "time") %>%
+  convert_rate(oxy.unit = '%Air', time.unit = 's', output.unit = 'umol/min/g', 
+               volume = 0.175, S = 28, t = 10, mass = #ENTER MASS) %>%
+  #plot(pos =10) %>%
+  #summary(pos =10) %>% this is to specifically look at specific replicates
+  select_rate(method = "rsq", n = c(0.9,1)) %>%
+  select_rate(method = "lowest_percentile", n = 0.1) %>%
+  mean() %>% #this is your final value
+  summary(export = TRUE)
+```
+
+```{r}
+total_A3<-df_respirometry_num %>%
+  select(" dt (s) [A Ch.1 Main]", "Oxygen (%air sat.) [A Ch.3 Main]") %>%
+  na.omit() %>%
+  inspect(time = 1, oxygen = 2, plot = FALSE) %>%
+  subset_data(from = 30000, to = 40000, by = "time") %>% #subset to after MMR and middle of night 
+  auto_rate.int(start = 600, #time that flush pump is on, in seconds
+                wait = 100, 
+                measure = 250, #wait + measure times should add to time that flush pump is off
+                method = "linear", width = 150, by = "time") %>%
+  convert_rate(oxy.unit = '%Air', time.unit = 's', output.unit = 'umol/min/g', 
+               volume = 0.175, S = 11, t = 10, mass = #ENTER MASS) %>%
+  #plot(pos =10) %>%
+  #summary(pos =10) %>% this is to specifically look at specific replicates
+  select_rate(method = "rsq", n = c(0.9,1)) %>%
+  select_rate(method = "lowest_percentile", n = 0.1) %>%
+  mean() %>% #this is your final value
+  summary(export = TRUE)
+```
+
+```{r}
+total_A4<-df_respirometry_num %>%
+  select(" dt (s) [A Ch.1 Main]", "Oxygen (%air sat.) [A Ch.4 Main]") %>%
+  na.omit() %>%
+  inspect(time = 1, oxygen = 2, plot = FALSE) %>%
+  subset_data(from = 30000, to = 40000, by = "time") %>% #subset to after MMR and middle of night 
+  auto_rate.int(start = 600, #time that flush pump is on, in seconds
+                wait = 100, 
+                measure = 250, #wait + measure times should add to time that flush pump is off
+                method = "linear", width = 150, by = "time") %>%
+  convert_rate(oxy.unit = '%Air', time.unit = 's', output.unit = 'umol/min/g', 
+               volume = 0.175, S = 11, t = 10, mass = #ENTER MASS) %>%
+  #plot(pos =10) %>%
+  #summary(pos =10) %>% this is to specifically look at specific replicates
+  select_rate(method = "rsq", n = c(0.9,1)) %>%
+  select_rate(method = "lowest_percentile", n = 0.1) %>%
+  mean() %>% #this is your final value
+  summary(export = TRUE)
+```
+
+```{r}
+total_B1<-df_respirometry_num %>%
+  select(" dt (s) [A Ch.1 Main]", "Oxygen (%air sat.) [B Ch.1 Main]") %>%
+  na.omit() %>%
+  inspect(time = 1, oxygen = 2, plot = FALSE) %>%
+  subset_data(from = 30000, to = 40000, by = "time") %>% #subset to after MMR and middle of night 
+  auto_rate.int(start = 600, #time that flush pump is on, in seconds
+                wait = 150, 
+                measure = 330, #wait + measure times should add to time that flush pump is off
+                method = "linear", width = 150, by = "time") %>%
+  convert_rate(oxy.unit = '%Air', time.unit = 's', output.unit = 'umol/min/g', 
+               volume = 0.175, S = 28, t = 24, mass = #ENTER MASS) %>%
+  #plot(pos =10) %>%
+  #summary(pos =10) %>% this is to specifically look at specific replicates
+  select_rate(method = "rsq", n = c(0.9,1)) %>%
+  select_rate(method = "lowest_percentile", n = 0.1) %>%
+  mean() %>% #this is your final value
+  summary(export = TRUE)
+```
