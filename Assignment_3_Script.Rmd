@@ -21,23 +21,34 @@ suppressPackageStartupMessages(
 
 creating the dataframe
 ```{r}
-df_respirometry <- read.delim("KILLIFISH_RESPIROMETRY_2.txt")
+df_respirometry_acclimation <- read.delim("KILLIFISH_RESPIROMETRY_2_ACCLIMATION.txt")
+df_respirometry_opposite <- read.delim("KILLIFISH_RESPIROMETRY_2_OPPOSITE.txt")
 ```
 **BMB**: is there any way you can get these data in a saner format?
 **response**: the software used to collect this info is called "pyroscience" 
   and the file outputs are supposed to be their own file types ".pyr", so yes 
   it is a mess and part of the reason I'm here!
 
+Removing rows by a row name in the software instead of manually
 ```{r}
-start_row <- which(apply(df_respirometry, 1, 
-  function(x) any(x == "#--- Measurement Data --------------------------------------------------------------------")))
-df_respirometry <- df_respirometry[(start_row + 1):nrow(df_respirometry), ]
-colnames(df_respirometry) <- df_respirometry[1, ]
+start_row_acclimation <- which(apply(df_respirometry_acclimation, 1, 
+  function(x) any(x == "#--- Measurement Data --------------------------------------------------------------------"))) 
+df_respirometry_acclimation <- df_respirometry_acclimation[(start_row_acclimation + 1):nrow(df_respirometry_acclimation), ]
+colnames(df_respirometry_acclimation) <- df_respirometry_acclimation[1, ]
+df_respirometry_acclimation <- df_respirometry_acclimation [-1,]
+
+start_row_opposite <- which(apply(df_respirometry_opposite, 1, 
+  function(x) any(x == "#--- Measurement Data --------------------------------------------------------------------"))) 
+df_respirometry_opposite <- df_respirometry_opposite[(start_row_opposite + 1):nrow(df_respirometry_opposite), ]
+colnames(df_respirometry_opposite) <- df_respirometry_opposite[1, ]
+df_respirometry_opposite <- df_respirometry_opposite [-1,]
 ```
 
+Setting up a function to process the dataframes for both acclimation and opposite
 ```{r}
-df_respirometry <- df_respirometry %>%
-  select(
+process_respirometry_df <- function(df) {
+  df %>%
+    select(
     " dt (s) [A Ch.1 Main]",
     "Oxygen (%air sat.) [A Ch.1 Main]",
     "Oxygen (%air sat.) [A Ch.2 Main]",
@@ -47,22 +58,17 @@ df_respirometry <- df_respirometry %>%
     "Oxygen (%air sat.) [B Ch.2 Main]",
     "Oxygen (%air sat.) [B Ch.3 Main]",
     "Oxygen (%air sat.) [B Ch.4 Main]"
-  )
+    ) %>%
+    janitor::clean_names(case = "snake") %>%
+    mutate(across(everything(), as.numeric)) %>%
+    drop_na()
+  }
 ```
 
-#making values numeric for RespR because they are currently character
+Running the function
 ```{r}
-str(df_respirometry) #returns that all columns are "chr"
-df_respirometry_num <- df_respirometry [-1,]%>%
-  mutate(across(everything(), as.numeric))
-str(df_respirometry_num) #verifies everything is converted to "num"
-```
-
-#removing excess NAs from when data was stopped recording 
-```{r}
-df_respirometry_num[!complete.cases(df_respirometry_num), ] #identifies rows with NAs to check if they are in the 'core' of the data
-df_respirometry_num <- df_respirometry_num %>% drop_na()
-anyNA(df_respirometry_num) #confirm NAs were removed
+df_respirometry_acclimation <- process_respirometry_df(df_respirometry_acclimation)
+df_respirometry_opposite <- process_respirometry_df(df_respirometry_opposite)
 ```
 
 ```{r}
