@@ -72,6 +72,7 @@ df_respirometry_opposite <- process_respirometry_df(df_respirometry_opposite)
 ```
 
 **Note**: I recognize that have each of the following respR functions separate is redundant when I could define it as a function and run it repeatedly like above. However the individual variance between chambers makes this tricky because the "weight", start", "wait" and "measure" times all slightly differ so I decided to do this manually. 
+**as well**: to respond to a comment from assignment 2, I agree that the automation of this calculation is tricky. The historical way of process data this was to literally take the slope by hand from the raw file. Our lab is experimenting with trying to use this Rpackage "respR" instead, and I have intentionally chosen this data to bring to class to get the opportunity to play with the data and see if it is something worth using. 
 ```{r}
 A1_acclimation<-df_respirometry_acclimation %>%
   select("dt_s_a_ch_1_main", "oxygen_percent_air_sat_a_ch_1_main") %>%
@@ -248,7 +249,7 @@ df_list <- list(
 df_combined <- bind_rows(df_list)
 ```
 
-Factoring to group by for boxplot
+Factoring to group by for plots
 ```{r}
 df_combined <- df_combined %>%
   mutate(temp_group = factor(t))
@@ -285,38 +286,71 @@ ggplot(df_combined, aes(x = temp_group, y = abs(rate.output))) +
     y =  expression("Metabolic Rate (" * mu * "mol O"[2] ~ min^{-1} ~ g^{-1} * ")")
   )
 ```
+Area plot
+```{r}
+ggplot(df_bubbles, aes(x = S, y = 1)) +
+  geom_point(
+    aes(size = mean_rate, fill = S),
+    shape = 21,
+    color = "black",
+    stroke = 1.2
+  ) +
+  scale_size_area(max_size = 20) +
+  scale_fill_manual(
+    values = c(
+      "11" = "grey90",
+      "28" = "grey65"
+    ),
+    name = "Salinity (ppt)"
+  ) +
+  guides(fill = "none") +
+  theme_classic() +
+  labs(
+    x = "Salinity (ppt)",
+    y = NULL,
+    size = "Metabolic Rate\n(µmol O₂·min⁻¹·g⁻¹)"
+  ) +
+  theme(
+    axis.ticks.y = element_blank(),
+    axis.text.y  = element_blank()
+  )
+```
 
 Time series plot
 ```{r}
+df_acc_plot <- df_respirometry_acclimation %>%
+  slice(150:400) %>%
+  mutate(t_align = dt_s_a_ch_1_main - first(dt_s_a_ch_1_main))
+
+df_opp_plot <- df_respirometry_opposite %>%
+  slice(100:350) %>%
+  mutate(t_align = dt_s_a_ch_1_main - first(dt_s_a_ch_1_main))
+
 ggplot() +
   geom_line(
-    data = df_respirometry_acclimation %>% slice(1:375),
-    aes(x = dt_s_a_ch_1_main,
-        y = oxygen_percent_air_sat_a_ch_1_main),
+    data = df_acc_plot,
+    aes(x = t_align, y = oxygen_percent_air_sat_a_ch_1_main),
     color = "blue",
     linewidth = 1.2
   ) +
   geom_line(
-    data = df_respirometry_opposite %>% slice(1:375),
-    aes(x = dt_s_a_ch_1_main,
-        y = oxygen_percent_air_sat_a_ch_1_main),
+    data = df_opp_plot,
+    aes(x = t_align, y = oxygen_percent_air_sat_a_ch_1_main),
     color = "red",
     linewidth = 1.2
   ) +
   geom_text(
-    data = df_respirometry_acclimation %>% slice(375),
-    aes(x = dt_s_a_ch_1_main,
-        y = oxygen_percent_air_sat_a_ch_1_main),
-        label = "10\u00B0C",
+    data = df_acc_plot %>% slice(n()),
+    aes(x = t_align, y = oxygen_percent_air_sat_a_ch_1_main),
+    label = "10\u00B0C Acclimation",
     color = "blue",
     size = 5,
     hjust = -0.1
   ) +
   geom_text(
-    data = df_respirometry_opposite %>% slice(375),
-    aes(x = dt_s_a_ch_1_main,
-        y = oxygen_percent_air_sat_a_ch_1_main),
-        label = "24\u00B0C",
+    data = df_opp_plot %>% slice(n()),
+    aes(x = t_align, y = oxygen_percent_air_sat_a_ch_1_main),
+    label = "24\u00B0C Acclimation",
     color = "red",
     size = 5,
     hjust = -0.1,
@@ -325,12 +359,13 @@ ggplot() +
   coord_cartesian(clip = "off") +
   theme_classic() +
   theme(
-  plot.margin = margin(t = 5, r = 40, b = 5, l = 5),  # top, right, bottom, left
-    panel.grid.major.y = element_line(color = "grey50"),
-    panel.grid.minor.y = element_line(color = "grey85"),
-    panel.grid.major.x = element_line(color = "grey50"),
-    panel.grid.minor.x = element_line(color = "grey85")
+    plot.margin = margin(t = 5, r = 110, b = 5, l = 5),
+    panel.grid.major = element_line(color = "grey70"),
+    panel.grid.minor = element_line(color = "grey85")
   ) +
-  labs(x = "Time (s)", y = "Oxygen Percentage (%)")
+  labs(
+    x = expression(Delta*"Time (s)"),
+    y = "Oxygen Percentage (%)"
+  )
 ```
 **descriptions of plots are in read me**
