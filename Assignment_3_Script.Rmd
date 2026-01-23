@@ -276,7 +276,7 @@ ggplot(df_combined, aes(x = temp_group, y = abs(rate.output))) +
   scale_y_log10() +
   theme_classic() +
   theme(
-    panel.grid.major.y = element_line(color = "grey85"),
+    panel.grid.major.y = element_line(color = "grey75"),
     panel.grid.minor.y = element_blank(),
     panel.grid.major.x = element_blank()
   ) +
