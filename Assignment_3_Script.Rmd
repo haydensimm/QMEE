@@ -71,18 +71,19 @@ df_respirometry_acclimation <- process_respirometry_df(df_respirometry_acclimati
 df_respirometry_opposite <- process_respirometry_df(df_respirometry_opposite)
 ```
 
+**Note**: I recognize that have each of the following respR functions separate is redundant when I could define it as a function and run it repeatedly like above. However the individual variance between chambers makes this tricky because the "weight", start", "wait" and "measure" times all slightly differ so I decided to do this manually. 
 ```{r}
-total_A1<-df_respirometry_num %>%
-  select(" dt (s) [A Ch.1 Main]", "Oxygen (%air sat.) [A Ch.1 Main]") %>%
+A1_acclimation<-df_respirometry_acclimation %>%
+  select("dt_s_a_ch_1_main", "oxygen_percent_air_sat_a_ch_1_main") %>%
   na.omit() %>%
   inspect(time = 1, oxygen = 2, plot = FALSE) %>%
   subset_data(from = 30000, to = 40000, by = "time") %>% #subset to after MMR and middle of night 
   auto_rate.int(start = 600, #time that flush pump is on, in seconds
-                wait = 100, 
-                measure = 250, #wait + measure times should add to time that flush pump is off
-                method = "linear", width = 150, by = "time") %>%
+                wait = 200, 
+                measure = 300, #wait + measure times should add to time that flush pump is off
+                method = "linear", width = 75, by = "time") %>%
   convert_rate(oxy.unit = '%Air', time.unit = 's', output.unit = 'umol/min/g', 
-               volume = 0.175, S = 28, t = 10, mass = #ENTER MASS) %>%
+               volume = 0.175, S = 28, t = 10, mass = 0.006843) %>%
   #plot(pos =10) %>%
   #summary(pos =10) %>% this is to specifically look at specific replicates
   select_rate(method = "rsq", n = c(0.9,1)) %>%
@@ -92,17 +93,17 @@ total_A1<-df_respirometry_num %>%
 ```
 
 ```{r}
-total_A2<-df_respirometry_num %>%
-  select(" dt (s) [A Ch.1 Main]", "Oxygen (%air sat.) [A Ch.2 Main]") %>%
+A2_acclimation<-df_respirometry_acclimation %>%
+  select("dt_s_a_ch_1_main", "oxygen_percent_air_sat_a_ch_2_main") %>%
   na.omit() %>%
   inspect(time = 1, oxygen = 2, plot = FALSE) %>%
   subset_data(from = 30000, to = 40000, by = "time") %>% #subset to after MMR and middle of night 
   auto_rate.int(start = 600, #time that flush pump is on, in seconds
-                wait = 100, 
-                measure = 250, #wait + measure times should add to time that flush pump is off
-                method = "linear", width = 150, by = "time") %>%
+                wait = 200, 
+                measure = 300, #wait + measure times should add to time that flush pump is off
+                method = "linear", width = 100, by = "time") %>%
   convert_rate(oxy.unit = '%Air', time.unit = 's', output.unit = 'umol/min/g', 
-               volume = 0.175, S = 28, t = 10, mass = #ENTER MASS) %>%
+               volume = 0.175, S = 28, t = 10, mass = 0.008887) %>%
   #plot(pos =10) %>%
   #summary(pos =10) %>% this is to specifically look at specific replicates
   select_rate(method = "rsq", n = c(0.9,1)) %>%
@@ -112,17 +113,17 @@ total_A2<-df_respirometry_num %>%
 ```
 
 ```{r}
-total_A3<-df_respirometry_num %>%
-  select(" dt (s) [A Ch.1 Main]", "Oxygen (%air sat.) [A Ch.3 Main]") %>%
+A3_acclimation<-df_respirometry_acclimation %>%
+  select("dt_s_a_ch_1_main", "oxygen_percent_air_sat_a_ch_3_main") %>%
   na.omit() %>%
   inspect(time = 1, oxygen = 2, plot = FALSE) %>%
   subset_data(from = 30000, to = 40000, by = "time") %>% #subset to after MMR and middle of night 
   auto_rate.int(start = 600, #time that flush pump is on, in seconds
-                wait = 100, 
-                measure = 250, #wait + measure times should add to time that flush pump is off
-                method = "linear", width = 150, by = "time") %>%
+                wait = 200, 
+                measure = 300, #wait + measure times should add to time that flush pump is off
+                method = "linear", width = 100, by = "time") %>%
   convert_rate(oxy.unit = '%Air', time.unit = 's', output.unit = 'umol/min/g', 
-               volume = 0.175, S = 11, t = 10, mass = #ENTER MASS) %>%
+               volume = 0.175, S = 11, t = 10, mass = 0.006597) %>%
   #plot(pos =10) %>%
   #summary(pos =10) %>% this is to specifically look at specific replicates
   select_rate(method = "rsq", n = c(0.9,1)) %>%
@@ -132,17 +133,17 @@ total_A3<-df_respirometry_num %>%
 ```
 
 ```{r}
-total_A4<-df_respirometry_num %>%
-  select(" dt (s) [A Ch.1 Main]", "Oxygen (%air sat.) [A Ch.4 Main]") %>%
+A4_acclimation<-df_respirometry_acclimation %>%
+  select("dt_s_a_ch_1_main", "oxygen_percent_air_sat_a_ch_4_main") %>%
   na.omit() %>%
   inspect(time = 1, oxygen = 2, plot = FALSE) %>%
   subset_data(from = 30000, to = 40000, by = "time") %>% #subset to after MMR and middle of night 
   auto_rate.int(start = 600, #time that flush pump is on, in seconds
-                wait = 100, 
-                measure = 250, #wait + measure times should add to time that flush pump is off
+                wait = 200, 
+                measure = 300, #wait + measure times should add to time that flush pump is off
                 method = "linear", width = 150, by = "time") %>%
   convert_rate(oxy.unit = '%Air', time.unit = 's', output.unit = 'umol/min/g', 
-               volume = 0.175, S = 11, t = 10, mass = #ENTER MASS) %>%
+               volume = 0.175, S = 11, t = 10, mass = 0.007571) %>%
   #plot(pos =10) %>%
   #summary(pos =10) %>% this is to specifically look at specific replicates
   select_rate(method = "rsq", n = c(0.9,1)) %>%
@@ -152,21 +153,183 @@ total_A4<-df_respirometry_num %>%
 ```
 
 ```{r}
-total_B1<-df_respirometry_num %>%
-  select(" dt (s) [A Ch.1 Main]", "Oxygen (%air sat.) [B Ch.1 Main]") %>%
+B1_opposite<-df_respirometry_opposite %>%
+  select("dt_s_a_ch_1_main", "oxygen_percent_air_sat_b_ch_1_main") %>%
   na.omit() %>%
   inspect(time = 1, oxygen = 2, plot = FALSE) %>%
   subset_data(from = 30000, to = 40000, by = "time") %>% #subset to after MMR and middle of night 
   auto_rate.int(start = 600, #time that flush pump is on, in seconds
-                wait = 150, 
-                measure = 330, #wait + measure times should add to time that flush pump is off
-                method = "linear", width = 150, by = "time") %>%
+                wait = 100, 
+                measure = 100, #wait + measure times should add to time that flush pump is off
+                method = "linear", width = 50, by = "time") %>%
   convert_rate(oxy.unit = '%Air', time.unit = 's', output.unit = 'umol/min/g', 
-               volume = 0.175, S = 28, t = 24, mass = #ENTER MASS) %>%
+               volume = 0.175, S = 28, t = 24, mass = 0.006843) %>%
   #plot(pos =10) %>%
   #summary(pos =10) %>% this is to specifically look at specific replicates
   select_rate(method = "rsq", n = c(0.9,1)) %>%
   select_rate(method = "lowest_percentile", n = 0.1) %>%
   mean() %>% #this is your final value
   summary(export = TRUE)
+```
+
+```{r}
+B2_opposite<-df_respirometry_opposite %>%
+  select("dt_s_a_ch_1_main", "oxygen_percent_air_sat_b_ch_2_main") %>%
+  na.omit() %>%
+  inspect(time = 1, oxygen = 2, plot = FALSE) %>%
+  subset_data(from = 30000, to = 40000, by = "time") %>% #subset to after MMR and middle of night 
+  auto_rate.int(start = 600, #time that flush pump is on, in seconds
+                wait = 100, 
+                measure = 150, #wait + measure times should add to time that flush pump is off
+                method = "linear", width = 100, by = "time") %>%
+  convert_rate(oxy.unit = '%Air', time.unit = 's', output.unit = 'umol/min/g', 
+               volume = 0.175, S = 28, t = 24, mass = 0.008887) %>%
+  #plot(pos =10) %>%
+  #summary(pos =10) %>% this is to specifically look at specific replicates
+  select_rate(method = "rsq", n = c(0.9,1)) %>%
+  select_rate(method = "lowest_percentile", n = 0.1) %>%
+  mean() %>% #this is your final value
+  summary(export = TRUE)
+```
+
+```{r}
+B3_opposite<-df_respirometry_opposite %>%
+  select("dt_s_a_ch_1_main", "oxygen_percent_air_sat_b_ch_3_main") %>%
+  na.omit() %>%
+  inspect(time = 1, oxygen = 2, plot = FALSE) %>%
+  subset_data(from = 30000, to = 40000, by = "time") %>% #subset to after MMR and middle of night 
+  auto_rate.int(start = 600, #time that flush pump is on, in seconds
+                wait = 100, 
+                measure = 180, #wait + measure times should add to time that flush pump is off
+                method = "linear", width = 75, by = "time") %>%
+  convert_rate(oxy.unit = '%Air', time.unit = 's', output.unit = 'umol/min/g', 
+               volume = 0.175, S = 11, t = 24, mass = 0.006597) %>%
+  #plot(pos =10) %>%
+  #summary(pos =10) %>% this is to specifically look at specific replicates
+  select_rate(method = "rsq", n = c(0.9,1)) %>%
+  select_rate(method = "lowest_percentile", n = 0.1) %>%
+  mean() %>% #this is your final value
+  summary(export = TRUE)
+```
+
+```{r}
+B4_opposite<-df_respirometry_opposite %>%
+  select("dt_s_a_ch_1_main", "oxygen_percent_air_sat_b_ch_4_main") %>%
+  na.omit() %>%
+  inspect(time = 1, oxygen = 2, plot = FALSE) %>%
+  subset_data(from = 30000, to = 40000, by = "time") %>% #subset to after MMR and middle of night 
+  auto_rate.int(start = 600, #time that flush pump is on, in seconds
+                wait = 100, 
+                measure = 180, #wait + measure times should add to time that flush pump is off
+                method = "linear", width = 75, by = "time") %>%
+  convert_rate(oxy.unit = '%Air', time.unit = 's', output.unit = 'umol/min/g', 
+               volume = 0.175, S = 11, t = 24, mass = 0.007571) %>%
+  #plot(pos =10) %>%
+  #summary(pos =10) %>% this is to specifically look at specific replicates
+  select_rate(method = "rsq", n = c(0.9,1)) %>%
+  select_rate(method = "lowest_percentile", n = 0.1) %>%
+  mean() %>% #this is your final value
+  summary(export = TRUE)
+```
+
+listing dataframes to combine them
+```{r}
+df_list <- list(
+  A1_acclimation,
+  A2_acclimation,
+  A3_acclimation,
+  A4_acclimation,
+  B1_opposite,
+  B2_opposite,
+  B3_opposite,
+  B4_opposite
+)
+
+df_combined <- bind_rows(df_list)
+```
+
+Factoring to group by for boxplot
+```{r}
+df_combined <- df_combined %>%
+  mutate(temp_group = factor(t))
+df_combined$S <- factor(df_combined$S)
+```
+
+Boxplot
+```{r}
+ggplot(df_combined, aes(x = temp_group, y = abs(rate.output))) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(
+    aes(shape = S, fill = S),
+    width = 0.1,
+    size = 3,
+    color = "black"
+  ) +
+  scale_shape_manual(
+    values = c("11" = 21, "28" = 24),
+    name = "Salinity (ppt)"
+  ) +
+  scale_fill_manual(
+    values = c("11" = "white", "28" = "black"),
+    name = "Salinity (ppt)"
+  ) +
+  scale_y_log10() +
+  theme_classic() +
+  theme(
+    panel.grid.major.y = element_line(color = "grey85"),
+    panel.grid.minor.y = element_blank(),
+    panel.grid.major.x = element_blank()
+  ) +
+  labs(
+    x = "Assay Temperature (C)",
+    y =  expression("Metabolic Rate (" * mu * "mol O"[2] ~ min^{-1} ~ g^{-1} * ")")
+  )
+```
+
+Time series plot
+```{r}
+ggplot() +
+  geom_line(
+    data = df_respirometry_acclimation %>% slice(1:375),
+    aes(x = dt_s_a_ch_1_main,
+        y = oxygen_percent_air_sat_a_ch_1_main),
+    color = "blue",
+    linewidth = 1.2
+  ) +
+  geom_line(
+    data = df_respirometry_opposite %>% slice(1:375),
+    aes(x = dt_s_a_ch_1_main,
+        y = oxygen_percent_air_sat_a_ch_1_main),
+    color = "red",
+    linewidth = 1.2
+  ) +
+  geom_text(
+    data = df_respirometry_acclimation %>% slice(375),
+    aes(x = dt_s_a_ch_1_main,
+        y = oxygen_percent_air_sat_a_ch_1_main),
+        label = "10\u00B0C",
+    color = "blue",
+    size = 5,
+    hjust = -0.1
+  ) +
+  geom_text(
+    data = df_respirometry_opposite %>% slice(375),
+    aes(x = dt_s_a_ch_1_main,
+        y = oxygen_percent_air_sat_a_ch_1_main),
+        label = "24\u00B0C",
+    color = "red",
+    size = 5,
+    hjust = -0.1,
+    vjust = 0.05
+  ) +
+  coord_cartesian(clip = "off") +
+  theme_classic() +
+  theme(
+  plot.margin = margin(t = 5, r = 40, b = 5, l = 5),  # top, right, bottom, left
+    panel.grid.major.y = element_line(color = "grey50"),
+    panel.grid.minor.y = element_line(color = "grey85"),
+    panel.grid.major.x = element_line(color = "grey50"),
+    panel.grid.minor.x = element_line(color = "grey85")
+  ) +
+  labs(x = "Time (s)", y = "Oxygen Percentage (%)")
 ```
