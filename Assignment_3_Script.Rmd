@@ -282,12 +282,18 @@ ggplot(df_combined, aes(x = temp_group, y = abs(rate.output))) +
     panel.grid.major.x = element_blank()
   ) +
   labs(
-    x = "Assay Temperature (C)",
+    x = "Assay Temperature (\u00B0C)",
     y =  expression("Metabolic Rate (" * mu * "mol O"[2] ~ min^{-1} ~ g^{-1} * ")")
   )
 ```
 Area plot
 ```{r}
+df_bubbles <- df_combined %>%
+  mutate(S = factor(S)) %>%
+  group_by(S) %>%
+  summarise(
+    mean_rate = mean(abs(rate.output), na.rm = TRUE)
+  )
 ggplot(df_bubbles, aes(x = S, y = 1)) +
   geom_point(
     aes(size = mean_rate, fill = S),

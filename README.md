@@ -37,3 +37,16 @@ In the end I would like to use the respR package to extra the metabolic rates fr
 perform the appropriate statistical tests to make comparisons between groups. Each .txt file containing data all
 used the same software so the chambers names over lap. To break this into replicable components I think each file
 will be run separately. 
+
+Assignment 3 description:
+Boxplot: the boxplot is trying to show the magnitude of difference between metabolic rates at the two assays 
+temperatures used in the experiments. Therefore the groups are separated on the x-axis by this factor. Additionally,
+to display the second factor, different shapes are used for the individual data points to correspond to the 
+different salinity acclimations. The y-axis is a log scale in order to better display the variance within groups 
+since the individuals points of the 10C assay group were relatively indistinguishable otherwise. Horizontal 
+grid lines were added to convey the log scale since the distance between them increases with the scale. The graphical 
+choices were made to follow the Cleveland Hierarchy. The primary intention was to visualize the metabolic rate so 
+this was positioned as the common scale of the y-axis. Then to differentiate between the salinity factor, different 
+shapes were chosen to utilize differentiation by angle, which is the next highest in the hierarchy besides length 
+which I believe would be confusing because the intention was not to establish an order within the salinity factor.
+Area plot: this plot is a poor way to visualize the data. 
