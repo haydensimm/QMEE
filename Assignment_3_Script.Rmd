@@ -5,6 +5,8 @@ date: "2026-01-20"
 output: html_document
 ---
 
+JD: It's hard to be sure what's new here. Maybe better to respond to Ben back in Assignment 2, and start this assignment by reading an .rds file. You can also use the README to tell us how things go together.
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -233,6 +235,8 @@ B4_opposite<-df_respirometry_opposite %>%
   summary(export = TRUE)
 ```
 
+JD: Not sure what to make of all the plots above here. They could have suppressed, or the flow explained a bit better, or both.
+
 listing dataframes to combine them
 ```{r}
 df_list <- list(
@@ -249,6 +253,8 @@ df_list <- list(
 df_combined <- bind_rows(df_list)
 ```
 
+JD: It's not clear why you don't just make t into a factor (or put the factor in your aes() statement). Also not clear why you use different syntax (mutate vs. $) to do almost exactly the same thing to t and S
+
 Factoring to group by for plots
 ```{r}
 df_combined <- df_combined %>%
@@ -256,9 +262,12 @@ df_combined <- df_combined %>%
 df_combined$S <- factor(df_combined$S)
 ```
 
+
+JD: Why are you taking absolute values? That's generally a strange move, and worth explaining here. Since they're all presumably supposed to be negative using "-" is probably the more principled approach (although I need to know more to be sure). It's also not clear why you need to do so much manual stuff, nor why it's clear to make a boxplot for so few points.
+
 Boxplot
 ```{r}
-ggplot(df_combined, aes(x = temp_group, y = abs(rate.output))) +
+ggplot(df_combined, aes(x = temp_group, y=abs(rate.output))) +
   geom_boxplot(outlier.shape = NA) +
   geom_jitter(
     aes(shape = S, fill = S),
@@ -286,6 +295,19 @@ ggplot(df_combined, aes(x = temp_group, y = abs(rate.output))) +
     y =  expression("Metabolic Rate (" * mu * "mol O"[2] ~ min^{-1} ~ g^{-1} * ")")
   )
 ```
+
+JD: I made this just to try to understand the data, but it seems to cover what we're seeing in the plot above
+```{r scatter}
+## summary(df_combined)
+print(ggplot(df_combined)
+	+ aes(x = temp_group, y=-rate.output, color=S, shape=S)
+	+ geom_point(position=position_dodge(width=0.5), size=2)
+	+ theme_classic() ## Consider using theme_set at top
+)
+```
+
+JD: I can't tell at all what the Area plot is supposed to do. You say it's not a good method, but I'm wondering if it's even implemented in a sensible way.
+
 Area plot
 ```{r}
 df_bubbles <- df_combined %>%
@@ -375,3 +397,5 @@ ggplot() +
   )
 ```
 **descriptions of plots are in read me**
+
+Grade: 1.8/3
