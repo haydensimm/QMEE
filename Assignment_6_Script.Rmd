@@ -9,4 +9,86 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Hypothesis: At the level of whole-body metabolism, differences in aerobic scope between acclimation treatments are expected because of the energetic costs of acclimation. Specifically, I hypothesize that the costs of osmoregulation will alter the acclimation response to temperature, where acclimation to isosmotic conditions (11 ppt) is predicted to decrease the sensitivity of fish to acute changes in temperature relative to acclimation to hyperosmolarity (28 ppt). Specifically, I predict cold (10℃) acclimated fish would have much higher metabolic rates in their acclimation condition than warm (24℃) acclimated fish respectively. Thereby warm- and isosmotic-salinity acclimated fish ae predicted to have greater aerobic scope than cold-acclimated counterparts. Contrarily, hyperosmotic-salinity acclimated fish will have decreased aerobic scope compared to isosmotic conditions alone. I hypothesized this because I am inferring thyroid signalling will increases metabolic expenditure during acclimation to both cold and hyperosmolarity, causing a higher resting metabolic rate (RMR) and thereby less difference from maximal metabolic rate (MMR). Finally, I am hypothesizing the prevalence of an interaction because I expect thyroid signalling to be dampened at warmer temperatures which will constrain the ability to remodel osmoregulatory physiology at high salinities.
+Hypothesis: At the level of whole-body metabolism, differences in aerobic scope between acclimation treatments are expected because of the energetic costs of acclimation. Specifically, I hypothesize that the costs of osmoregulation will alter the acclimation response to temperature, where acclimation to isosmotic conditions (11 ppt) is predicted to decrease the sensitivity of fish to acute changes in temperature relative to acclimation to hyperosmolarity (28 ppt). Specifically, I predict cold (10℃) acclimated fish would have much higher metabolic rates in their acclimation condition than warm (24℃) acclimated fish respectively. Thereby warm- and isosmotic-salinity acclimated fish ae predicted to have greater aerobic scope than cold-acclimated counterparts. Contrarily, hyperosmotic-salinity acclimated fish will have decreased aerobic scope compared to isosmotic conditions alone. I hypothesized this because I am inferring thyroid signalling will increases metabolic expenditure during acclimation to both cold and hyperosmolarity, causing a higher resting metabolic rate (RMR) and thereby less difference from maximal metabolic rate (MMR). Finally, I am hypothesizing the prevalence of an interaction because I expect thyroid signalling to be dampened at warmer temperatures which will constrain the ability to remodel osmoregulatory physiology at high salinity.
+
+A Linear model which could be tested from this data would be to see if there are differences between the aerobic scope of fish acclimated to different salinity assayed at 10 degrees Celsius. 
+
+```{r}
+# loading packages --------------------------------------------------------
+
+suppressPackageStartupMessages(
+  library(tidyverse)
+  )
+library(emmeans)
+library(ggplot2)
+library(car)
+library(see)
+library(performance)
+library(broom)
+```
+
+```{r}
+df_respirometry<-read_csv("respirometry_data.csv")
+```
+
+Factoring salinity and temperature
+```{r}
+df_respirometry$acclimation_salinity <- as.factor(df_respirometry$acclimation_salinity)
+df_respirometry$acclimation_temperature <- as.factor(df_respirometry$acclimation_temperature)
+```
+
+Linear model
+```{r}
+model <- lm(aerobic_scope_10deg ~ acclimation_salinity * acclimation_temperature,
+            data = df_respirometry)
+Anova(model, type = "II")
+summary(model)
+```
+
+Diagnostic plots
+```{r}
+plot(model, which = 1)
+plot(model, which = 5)
+```
+Residuals vs fitted: The data points are clustering into 4 columns associated with the 4 treatment factors however this is expected because of the categorical nature of the predictors. As well, within each vertical cluster the position of points above and below the midline is similar and random so variance appears relatively equal and therefore the assumption of homoscedasity appears to be met. Points 7 and 25 may be outliers and could use further assessment.
+Residuals vs leverage: The vertical column cluster remains. Points 7 and 25 are separated from the the rest of the data points however they are not beyond a cook's distance of 0.5 so appear to not be outliers of concern.
+
+Prediction plot
+```{r}
+check_model(model)
+```
+Posterior predictive check: most of the observed data lines resemble the predicted model. Some data lines do appear to have two humps, however most generally follow the bell shape. This displays the model predicts the observed data well.
+Linearity and Homogeneity of variance: The references lines are flat and horizontal, similar to the residuals vs fitted plot above, and have equal vertical scatter in the clustered columns associated with the model factors. This confirms the assumptions of linearity and homogenity of variance are met.
+
+Inferential plot (emmeans)
+```{r}
+emm <- emmeans(model, ~ acclimation_salinity * acclimation_temperature)
+emm_df <- as.data.frame(emm)
+
+ggplot(emm_df, aes(x = acclimation_salinity, 
+                   y = emmean,
+                   color = factor(acclimation_temperature),
+                   group = factor(acclimation_temperature))) +
+  geom_point(size = 3) +
+  geom_line(linewidth = 1) +
+  geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.1) +
+  scale_color_manual(values = c("10" = "blue", "24" = "red")) +
+  labs(x = "Acclimation Salinity",
+       y = "Predicted Aerobic Scope (10°C)",
+       color = "Acclimation Temperature") +
+  theme_minimal(base_size = 14)
+```
+Discussion: It appears that an interaction between acclimation temperature and acclimation salinity may have an interaction with respect to predicted aerobic scope because we see differences in magnitude and opposite slopes within acclimation temperature and across acclimation salinity. However, This interaction is statistically unclear because of overlap between error bars. 
+
+Coefficient plot
+```{r}
+coef_df <- tidy(model, conf.int = TRUE)
+
+ggplot(coef_df[-1, ], aes(x = estimate, y = term)) +  # remove intercept
+  geom_point() +
+  geom_errorbarh(aes(xmin = conf.low, xmax = conf.high), width = 0.2) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  labs(x = "Estimate ± 95% CI", y = "") +
+  theme_minimal(base_size = 14)
+```
+Discussion: Here we can see similar trend in the model coefficients where the only statistically clear effect is acclimation temperature where the confidence intervals do not cross 0. Again the effect of acclimation salinity and an interaction between the two remains unclear because the 95% confidence intervals cross 0 which can be inferred as the coefficient being insignificant. Interestingly, the emmean of the interaction is on the opposite side of the 0 line to the factors alone. This continues to suggest that a biologically relevant interaction may exist, but its statistical significance remains unclear.
