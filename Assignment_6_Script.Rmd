@@ -15,16 +15,15 @@ A Linear model which could be tested from this data would be to see if there are
 
 ```{r}
 # loading packages --------------------------------------------------------
-
-suppressPackageStartupMessages(
+suppressPackageStartupMessages({
   library(tidyverse)
-  )
-library(emmeans)
-library(ggplot2)
-library(car)
-library(see)
-library(performance)
-library(broom)
+  library(emmeans)
+  library(ggplot2)
+  library(car)
+  library(see)
+  library(performance)
+  library(broom)
+})
 ```
 
 ```{r}
