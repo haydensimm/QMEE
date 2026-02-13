@@ -1,0 +1,12 @@
+---
+title: "Assignment_6_Script"
+author: "Hayden Simm"
+date: "2026-02-13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Hypothesis: At the level of whole-body metabolism, differences in aerobic scope between acclimation treatments are expected because of the energetic costs of acclimation. Specifically, I hypothesize that the costs of osmoregulation will alter the acclimation response to temperature, where acclimation to isosmotic conditions (11 ppt) is predicted to decrease the sensitivity of fish to acute changes in temperature relative to acclimation to hyperosmolarity (28 ppt). Specifically, I predict cold (10℃) acclimated fish would have much higher metabolic rates in their acclimation condition than warm (24℃) acclimated fish respectively. Thereby warm- and isosmotic-salinity acclimated fish ae predicted to have greater aerobic scope than cold-acclimated counterparts. Contrarily, hyperosmotic-salinity acclimated fish will have decreased aerobic scope compared to isosmotic conditions alone. I hypothesized this because I am inferring thyroid signalling will increases metabolic expenditure during acclimation to both cold and hyperosmolarity, causing a higher resting metabolic rate (RMR) and thereby less difference from maximal metabolic rate (MMR). Finally, I am hypothesizing the prevalence of an interaction because I expect thyroid signalling to be dampened at warmer temperatures which will constrain the ability to remodel osmoregulatory physiology at high salinities.
