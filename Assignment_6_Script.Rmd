@@ -52,14 +52,13 @@ plot(model, which = 5)
 Residuals vs fitted: The data points are clustering into 4 columns associated with the 4 treatment factors however this is expected because of the categorical nature of the predictors. As well, within each vertical cluster the position of points above and below the midline is similar and random so variance appears relatively equal and therefore the assumption of homoscedasity appears to be met. Points 7 and 25 may be outliers and could use further assessment.
 Residuals vs leverage: The vertical column cluster remains. Points 7 and 25 are separated from the the rest of the data points however they are not beyond a cook's distance of 0.5 so appear to not be outliers of concern.
 
-Prediction plot
 ```{r}
 check_model(model)
 ```
 Posterior predictive check: most of the observed data lines resemble the predicted model. Some data lines do appear to have two humps, however most generally follow the bell shape. This displays the model predicts the observed data well.
 Linearity and Homogeneity of variance: The references lines are flat and horizontal, similar to the residuals vs fitted plot above, and have equal vertical scatter in the clustered columns associated with the model factors. This confirms the assumptions of linearity and homogenity of variance are met.
 
-Inferential plot (emmeans)
+Predictive plot (emmeans)
 ```{r}
 emm <- emmeans(model, ~ acclimation_salinity * acclimation_temperature)
 emm_df <- as.data.frame(emm)
@@ -79,7 +78,7 @@ ggplot(emm_df, aes(x = acclimation_salinity,
 ```
 Discussion: It appears that an interaction between acclimation temperature and acclimation salinity may have an effect with respect to predicted aerobic scope because we see differences in magnitude and opposite sign of slopes within acclimation temperature and across acclimation salinity. However, This interaction is statistically unclear because of overlap between error bars. 
 
-Coefficient plot
+Inferential plot
 ```{r}
 coef_df <- tidy(model, conf.int = TRUE)
 
