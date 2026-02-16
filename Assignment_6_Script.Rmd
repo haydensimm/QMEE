@@ -9,9 +9,11 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Hypothesis: At the level of whole-body metabolism, differences in aerobic scope between acclimation treatments are expected because of the energetic costs of acclimation. Specifically, I hypothesize that the costs of osmoregulation will alter the acclimation response to temperature, where acclimation to isosmotic conditions (11 ppt) is predicted to decrease the sensitivity of fish to acute changes in temperature relative to acclimation to hyperosmolarity (28 ppt). Specifically, I predict cold (10℃) acclimated fish would have much higher metabolic rates in their acclimation condition than warm (24℃) acclimated fish respectively. Thereby warm- and isosmotic-salinity acclimated fish ae predicted to have greater aerobic scope than cold-acclimated counterparts. Contrarily, hyperosmotic-salinity acclimated fish will have decreased aerobic scope compared to isosmotic conditions alone. I hypothesized this because I am inferring thyroid signalling will increases metabolic expenditure during acclimation to both cold and hyperosmolarity, causing a higher resting metabolic rate (RMR) and thereby less difference from maximal metabolic rate (MMR). Finally, I am hypothesizing the prevalence of an interaction because I expect thyroid signalling to be dampened at warmer temperatures which will constrain the ability to remodel osmoregulatory physiology at high salinity.
+Hypothesis: At the level of whole-body metabolism, differences in aerobic scope between acclimation treatments are expected because of the energetic costs of acclimation. Specifically, I hypothesize that the costs of osmoregulation will alter the acclimation response to temperature, where acclimation to isosmotic conditions (11 ppt) is predicted to decrease the sensitivity of fish to acute changes in temperature relative to acclimation to hyperosmolarity (28 ppt). Specifically, I predict cold (10℃) acclimated fish would have much higher metabolic rates in their acclimation condition than warm (24℃) acclimated fish respectively. Thereby warm- and isosmotic-salinity acclimated fish ae predicted to have greater aerobic scope than cold-acclimated counterparts. Contrarily, hyperosmotic-salinity acclimated fish will have decreased aerobic scope compared to isosmotic conditions alone. I hypothesized this because I am inferring thyroid signalling will increase metabolic expenditure during acclimation to both cold and hyperosmolarity, causing a higher resting metabolic rate (RMR) and thereby less difference from maximal metabolic rate (MMR). Finally, I am hypothesizing the prevalence of an interaction because I expect thyroid signalling to be dampened at warmer temperatures which will constrain the ability to remodel osmoregulatory physiology at high salinity.
 
 A Linear model which could be tested from this data would be to see if there are differences between the aerobic scope of fish acclimated to different salinity assayed at 10 degrees Celsius. 
+
+BMB: always watch out for "see if there **are** differences" ... 
 
 ```{r}
 # loading packages --------------------------------------------------------
@@ -35,6 +37,7 @@ Factoring salinity and temperature
 df_respirometry$acclimation_salinity <- as.factor(df_respirometry$acclimation_salinity)
 df_respirometry$acclimation_temperature <- as.factor(df_respirometry$acclimation_temperature)
 ```
+BMB: use mutate(across) ?
 
 Linear model
 ```{r}
@@ -43,6 +46,7 @@ model <- lm(aerobic_scope_10deg ~ acclimation_salinity * acclimation_temperature
 Anova(model, type = "II")
 summary(model)
 ```
+BMB: generally want to look at diagnostic plots **before** you look at the coefficients/p-values ...
 
 Diagnostic plots
 ```{r}
@@ -51,6 +55,8 @@ plot(model, which = 5)
 ```
 Residuals vs fitted: The data points are clustering into 4 columns associated with the 4 treatment factors however this is expected because of the categorical nature of the predictors. As well, within each vertical cluster the position of points above and below the midline is similar and random so variance appears relatively equal and therefore the assumption of homoscedasity appears to be met. Points 7 and 25 may be outliers and could use further assessment.
 Residuals vs leverage: The vertical column cluster remains. Points 7 and 25 are separated from the the rest of the data points however they are not beyond a cook's distance of 0.5 so appear to not be outliers of concern.
+
+BMB: as noted in class, the most extreme 3 points will *always* be labeled. (I agree with your judgements.)
 
 ```{r}
 check_model(model)
@@ -78,6 +84,8 @@ ggplot(emm_df, aes(x = acclimation_salinity,
 ```
 Discussion: It appears that an interaction between acclimation temperature and acclimation salinity may have an effect with respect to predicted aerobic scope because we see differences in magnitude and opposite sign of slopes within acclimation temperature and across acclimation salinity. However, This interaction is statistically unclear because of overlap between error bars. 
 
+BMB: agreed, but you shouldn't try to infer differences from the prediction plots. That's what the contrast/inferential plots are for.
+
 Inferential plot
 ```{r}
 coef_df <- tidy(model, conf.int = TRUE)
@@ -90,3 +98,7 @@ ggplot(coef_df[-1, ], aes(x = estimate, y = term)) +  # remove intercept
   theme_minimal(base_size = 14)
 ```
 Discussion: Here we can see similar trend in the model coefficients where the only statistically clear effect is acclimation temperature where the confidence intervals do not cross 0. Again the effect of acclimation salinity and an interaction between the two remains unclear because the 95% confidence intervals cross 0 which can be inferred as the coefficient being insignificant. Interestingly, the emmean of the interaction is on the opposite side of the 0 line to the factors alone. This continues to suggest that a biologically relevant interaction may exist, but its statistical significance remains unclear.
+
+BMB: you should also ask yourself whether these effects are all of a similar *magnitude*. What would your "large vs small effect" cutoff be for these data? (What are the units of the x-axis?)
+
+BMB: mark 2
