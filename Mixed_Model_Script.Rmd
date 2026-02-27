@@ -1,0 +1,54 @@
+---
+title: "Assignment_7_Script"
+author: "Hayden Simm"
+date: "2026-02-24"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Hypothesis: At the level of whole-body metabolism, differences in aerobic scope between acclimation treatments are expected because of the energetic costs of acclimation. I hypothesize that the simultaneous energetic demand of acclimation to cold and hyperosmotic conditions, both of which require increased energy expenditure and thyroid siganlling, will decrease the acute sensitivity of fish to changes in temperature. Specifically, I predict that cold (10℃) acclimated fish would have greater aerobic scopes compared to the their warm (24℃) acclimated counterparts when assayed at the same temperature. As well, I hypothesize that that acclimation to hyperosmotic salinity (28 ppt) will disrupt this response, and aerobic scope is predicted to decrease in hyperosmotic conditions. Thereby cold- and isosmotic-salinity acclimated fish are predicted to have greater aerobic scope than warm- and hyperosmotic-acclimated counterparts. Then, when acutely assayed at temperature opposite to their acclimation conditions, isosmotic fish are expected to be able to maintain thermal breadth and aerobic scope, whereas hyperosmolarity is predicted to decrease aerobic scope. Finally, I am hypothesizing the prevalence of an interaction between temperature and salinity because I expect thyroid signalling to be dampened at warmer temperatures which will constrain the ability to remodel osmoregulatory physiology.
+
+```{r}
+# loading packages --------------------------------------------------------
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(emmeans)
+  library(ggplot2)
+  library(car)
+  library(see)
+  library(performance)
+  library(broom)
+})
+```
+
+Creating dataframe
+```{r}
+df_respirometry<-read_csv("combined_respirometry_data.csv")
+```
+
+Converting predictor variables to factors
+```{r}
+df_respirometry <- df_respirometry %>%
+  mutate(across(c(acclimation_salinity,
+                  acclimation_temperature,
+                  assay_temperature),
+                as.factor))
+```
+
+glm
+```{r}
+interaction_glm <- glm(
+  aerobic_scope ~ acclimation_salinity *
+        acclimation_temperature *
+        assay_temperature,
+  data = df_respirometry,
+  family = gaussian
+)
+
+summary(interaction_glm)
+```
+
+use gaussian for assignemnt 
